@@ -14,6 +14,7 @@ const emailSchema = new mongoose.Schema({
 
 const userSchema = new mongoose.Schema({
   email: String, // User's email ID
+  accessToken: String, // User's access token
   starredEmails: [emailSchema], // Array of starred emails
   scheduledEmails: [emailSchema], // Array of scheduled emails
 });

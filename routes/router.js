@@ -3,6 +3,8 @@ const router = express.Router();
 const controllers = require("../controllers/controller")
 
 router.get('/', controllers.getUsers);
+router.post('/nylas/generate-auth-url',express.json(),controllers.generateAuthURL);
+router.post('/nylas/exchange-mailbox-token',express.json(),controllers.getTokenFromCode)
 router.post('/send_email', controllers.sendEmail);
 router.get("/read_email",controllers.readInbox);
 router.post("/star_email",controllers.starEmail);

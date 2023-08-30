@@ -3,6 +3,7 @@ const {NylasCongif} =require("../nylas-config");
 const { default: Draft } = require('nylas/lib/models/draft');
 const User = require("../modules/userSchema");
 const cron = require('node-cron');
+const { Scope } = require('nylas/lib/models/connect');
 
 const labelMap = {
   "Inbox": "inbox",
@@ -29,6 +30,55 @@ const getLabelForKey = value => {
 const getUsers = (req, res) => {
   res.send("User list");
 };
+
+const generateAuthURL = async(req,res) =>{
+  const { body } = req;
+  
+  const authUrl = NylasCongif.urlForAuthentication({
+    loginHint: body.email_address,
+    redirectURI: "http://localhost:3000/dashboard",
+    scopes: [Scope.EmailModify, Scope.EmailSend],
+  });
+
+  return res.send(authUrl);
+}
+
+const getTokenFromCode = async(req,res) =>{
+  const {body} = req;
+    try{
+        const { accessToken, emailAddress } = await NylasCongif.exchangeCodeForToken(
+            body.token
+          );
+        
+          // store the access token in the DB
+          // console.log('Access Token was generated for: ' + emailAddress);
+          // console.log("Generated Access Token",accessToken);
+          
+          let user = await User.findOne({ email: emailAddress });
+          if (user) {
+            // User exists, update the access token
+            user.accessToken = accessToken;
+            await user.save();
+            console.log('Access Token was updated for: ' + emailAddress);
+          } else {
+            // User doesn't exist, create a new user
+            user = await User.create({
+              email: emailAddress,
+              accessToken: accessToken,
+            });
+            console.log('New user created with email: ' + emailAddress);
+          }
+        
+          return res.json({
+            id: user._id, // Assuming your User model uses "_id" as the primary key
+            emailAddress: user.email,
+          });
+        // return res.send("Access Token Successfully Saved.")
+    }catch(err){
+        console.log(err);
+        return res.send(err)
+    }
+}
 
 const sendEmail = async(req, res) => {
   try{
@@ -202,5 +252,7 @@ module.exports = {
   starEmail,
   getStarredMail,
   scheduleMail,
-  getScheduledMail
+  getScheduledMail,
+  generateAuthURL,
+  getTokenFromCode
 };
