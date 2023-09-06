@@ -28,7 +28,7 @@ const getLabelForKey = value => {
 };
 
 const getUsers = (req, res) => {
-  res.send("User list");
+  res.send("YAAY! the server is running");
 };
 
 const generateAuthURL = async(req,res) =>{
@@ -82,9 +82,17 @@ const getTokenFromCode = async(req,res) =>{
 
 const sendEmail = async(req, res) => {
   try{
-    const {subject, body, recipient_array } = req.body;
-    token = "WE24m3Rqmr4cvXuH4ZdrqbZ8lrGVGO";
-    const nylas = NylasCongif.with(token);
+    const {subject, body, recipient_array, sender_email } = req.body;
+    if(!subject || !body || !recipient_array || !sender_email){
+      return res.status(422).json({ message: 'Please enter all data' });
+    }
+    const user = await User.findOne({ email: sender_email });
+  
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    const userToken = user?.accessToken;
+    const nylas = NylasCongif.with(userToken);
     
     const draft = new Draft(nylas, {
       subject: subject,
@@ -102,8 +110,18 @@ const sendEmail = async(req, res) => {
 
 const readInbox = async(req,res) => {
   try{
-    token = "t4qLPsX1c2KMCXpGMP3Qe6BVce0xBx";
-    const nylas = NylasCongif.with(token);
+    const { email } = req.body;
+    if(!email){
+      return res.status(422).json({ message: "Please send sender's email id" });
+    }
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    const userToken = user?.accessToken;
+   // token = "t4qLPsX1c2KMCXpGMP3Qe6BVce0xBx";
+    const nylas = NylasCongif.with(userToken);
     const labelArray = [];
 
     const account = await nylas.account.get();
@@ -145,16 +163,20 @@ const readInbox = async(req,res) => {
 const starEmail = async(req,res) => {
   const userEmail = req.body.email;
   const starredEmail = req.body.starredEmail;
+  if(!userEmail || !starredEmail){
+    return res.status(422).json({ message: "Please send all fields" });
+  }
   try {
     let user = await User.findOne({ email: userEmail });
 
     if (!user) {
-      user = new User({
-        email: userEmail,
-        starredEmails: [starredEmail],
-      });
+      // user = new User({
+      //   email: userEmail,
+      //   starredEmails: [starredEmail],
+      // });
+      return res.status(404).json({ message: 'User not found' });
     } else {
-      user.starredEmails.push(starredEmail[0]);
+      user.starredEmails.push(starredEmail);
     }
 
     const savedUser = await user.save();
@@ -167,7 +189,11 @@ const starEmail = async(req,res) => {
 
 const getStarredMail = async(req,res) =>{
   const userEmail = req.body.email;
-
+  const currentDateTime = new Date();
+console.log(currentDateTime);
+  if(!userEmail){
+    return res.status(422).json({ message: "Please send user's email ID" });
+  }
   try {
     const user = await User.findOne({ email: userEmail });
 
@@ -186,32 +212,47 @@ const getStarredMail = async(req,res) =>{
 const scheduleMail = async(req,res) => {
   const userEmail = req.body.email;
   const scheduledEmail = req.body.scheduledEmail;
+  if(!userEmail || !scheduledEmail){
+    return res.status(422).json({ message: "Please send all fields" });
+  }
   try {
     let user = await User.findOne({ email: userEmail });
 
     if (!user) {
-      user = new User({
-        email: userEmail,
-        scheduledEmails: [scheduledEmail],
-      });
+      // user = new User({
+      //   email: userEmail,
+      //   scheduledEmails: [scheduledEmail],
+      // });
+      return res.status(404).json({ message: 'User not found' });
     } else {
-      user.scheduledEmails.push(scheduledEmail[0]);
+      user.scheduledEmails.push(scheduledEmail);
     }
 
     const savedUser = await user.save();
 
-    const schedulingTime =  scheduledEmail[0].scheduledAt; 
-    // convert this schedulig time to '* * * * *' as per node-cron doc
-    cron.schedule(schedulingTime, async () => {
+    const schedulingTime =  scheduledEmail.scheduledAt; 
+    const dateTime = new Date(schedulingTime);
+
+    // Extract date and time components
+    const month = dateTime.getUTCMonth() + 1; // Months are zero-based, so add 1
+    const day = dateTime.getUTCDate();
+    const hour = dateTime.getUTCHours();
+    const minute = dateTime.getUTCMinutes();
+
+    // Construct the cron expression
+    const cronExpression = `${minute} ${hour} ${day} ${month} *`;
+    console.log(cronExpression);
+    cron.schedule(cronExpression, async () => {
       try {
-        token = "t4qLPsX1c2KMCXpGMP3Qe6BVce0xBx";
-        const nylas = NylasCongif.with(token);
+       const userToken = user.accessToken;
+        const nylas = NylasCongif.with(userToken);
 
         const draft = new Draft(nylas, {
-          subject: scheduledEmail[0].subject,
-          body: scheduledEmail[0].body,
-          to: scheduledEmail[0].recipient_array
+          subject: scheduledEmail.subject,
+          body: scheduledEmail.body,
+          to: scheduledEmail.recipient_array
         });
+        console.log("hii im here");
         await draft.send();
         //once the send is successful try to delete from scheduled array
         console.log('Scheduled email sent:', scheduledEmail);
@@ -229,7 +270,9 @@ const scheduleMail = async(req,res) => {
 
 const getScheduledMail = async(req,res) =>{
   const userEmail = req.body.email;
-
+  if(!userEmail){
+    return res.status(422).json({ message: "Please send user's email ID" });
+  }
   try {
     const user = await User.findOne({ email: userEmail });
 
