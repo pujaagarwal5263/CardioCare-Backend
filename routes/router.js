@@ -11,5 +11,9 @@ router.post("/star_email",controllers.starEmail);
 router.get("/starred_mails",controllers.getStarredMail);
 router.post("/schedule_email",controllers.scheduleMail);
 router.get("/scheduled_mails",controllers.getScheduledMail);
+router.get("/get_availability",controllers.getDummyDoctorsAvailability);
+router.get("/nylas/read-events",controllers.readEvents);
+router.get("/nylas/read-calendars",controllers.readCalendars);
+router.post("/nylas/create-events",controllers.createEvents);
 
 module.exports = router;

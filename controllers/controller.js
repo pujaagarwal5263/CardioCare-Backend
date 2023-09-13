@@ -1,6 +1,7 @@
 let token;
 const {NylasCongif} =require("../nylas-config");
 const { default: Draft } = require('nylas/lib/models/draft');
+const { default: Event } = require('nylas/lib/models/event');
 const User = require("../modules/userSchema");
 const cron = require('node-cron');
 const { Scope } = require('nylas/lib/models/connect');
@@ -37,7 +38,7 @@ const generateAuthURL = async(req,res) =>{
   const authUrl = NylasCongif.urlForAuthentication({
     loginHint: body.email_address,
     redirectURI: "http://localhost:3000/dashboard",
-    scopes: [Scope.EmailModify, Scope.EmailSend],
+    scopes: [Scope.EmailModify, Scope.EmailSend, Scope.Calendar],
   });
 
   return res.send(authUrl);
@@ -288,6 +289,99 @@ const getScheduledMail = async(req,res) =>{
   }
 }
 
+const getDummyDoctorsAvailability = async(req,res) =>{
+  // here we'll take user's email and doctor's email
+  // we'll put desired slot and hit API to see if doctor is available on that slot
+      //getting calendar id
+    const  email  = req.query.doctorEmail;
+    console.log(email);
+    if(!email){
+      return res.status(422).json({ message: "Please send sender's email id" });
+    }
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    const userToken = user?.accessToken;
+    let calendarID;
+    const nylas = NylasCongif.with(userToken);
+
+     const calendars = await nylas.calendars.list().then(calendars => {
+        calendars?.forEach(calendar => {
+          calendarID = calendar.id;
+        });
+      });
+
+      const sevenDaysFromNow = new Date();
+      sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+
+      // Convert the date to ISO 8601 format
+      const endsBeforeISO = sevenDaysFromNow.toISOString();
+
+      const events = await nylas.events.list({
+      calendar_id: calendarID,
+      starts_after: Date.now(),
+      ends_before: endsBeforeISO,
+      })
+      return res.json(events);
+}
+
+const readEvents = async (req, res) => {
+  const { calendarId, startsAfter, endsBefore, limit } = req.query;
+
+  const events = await NylasCongif.with("WD0KYCN00t79LF4GzROlPXWu65yovU")
+    .events.list({
+      calendar_id: calendarId,
+      starts_after: startsAfter,
+      ends_before: endsBefore,
+      limit: limit,
+    })
+    .then((events) => events);
+
+  return res.json(events);
+};
+
+const readCalendars = async (req, res) => {
+  const calendars = await NylasCongif.with("WD0KYCN00t79LF4GzROlPXWu65yovU")
+    .calendars.list()
+    .then((calendars) => calendars);
+
+  return res.json(calendars);
+};
+
+const createEvents = async (req, res) => {
+  const { calendarId, title, description, startTime, endTime, participants } =
+    req.body;
+
+  if (!calendarId || !title || !startTime || !endTime) {
+    return res.status(400).json({
+      message:
+        'Missing required fields: calendarId, title, starTime or endTime',
+    });
+  }
+
+  const nylas = NylasCongif.with("WD0KYCN00t79LF4GzROlPXWu65yovU");
+
+  const event = new Event(nylas);
+
+  event.calendarId = calendarId;
+  event.title = title;
+  event.description = description;
+  event.when.startTime = startTime;
+  event.when.endTime = endTime;
+
+  if (participants) {
+    event.participants = participants
+      .split(/s*,s*/)
+      .map((email) => ({ email }));
+  }
+
+  event.save();
+
+  return res.json(event);
+};
+
 module.exports = {
   getUsers,
   sendEmail,
@@ -297,5 +391,9 @@ module.exports = {
   scheduleMail,
   getScheduledMail,
   generateAuthURL,
-  getTokenFromCode
+  getTokenFromCode,
+  readEvents,
+  readCalendars,
+  createEvents,
+  getDummyDoctorsAvailability
 };
