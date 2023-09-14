@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser'); // Require body-parser
 const cors = require('cors');
 const { configDotenv } = require('dotenv');
+//require('./modules/migration')
 
 const app=express();
 app.use(cors({

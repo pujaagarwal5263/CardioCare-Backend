@@ -17,6 +17,21 @@ const userSchema = new mongoose.Schema({
   accessToken: String, // User's access token
   starredEmails: [emailSchema], // Array of starred emails
   scheduledEmails: [emailSchema], // Array of scheduled emails
+  userReport: {
+    age: Number,
+    sex: String,
+    chestPainType: String,
+    restingBloodPressure: Number,
+    serumCholesterol: Number,
+    fastingBloodSugar: Number,
+    restingElectrocardiographicResults: String,
+    maxHeartRateAchieved: Number,
+    exerciseInducedPain: String,
+    stDepressionInducedByExercise: Number,
+    slopeOfPeakExerciseSTSegment: String,
+    numMajorVesselsColoredByFluoroscopy: Number,
+    thaliumStressResult: String
+  }
 });
 
 const User = mongoose.model('User', userSchema);

@@ -382,6 +382,51 @@ const createEvents = async (req, res) => {
   return res.json(event);
 };
 
+const saveReport = async (req, res) => {
+  const { email, userReport } = req.body;
+
+  try {
+    // Find the user by email
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Update the user's userReport field with the new userReport data
+    user.userReport = userReport;
+
+    // Save the updated user document
+    await user.save();
+
+    return res.status(200).json({ message: 'User report updated successfully' });
+  } catch (error) {
+    console.error('Error:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+const getReport = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Find the user by email
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Access the user's userReport field and send it in the response
+    const userReport = user.userReport;
+
+    return res.status(200).json({ userReport });
+  } catch (error) {
+    console.error('Error:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 module.exports = {
   getUsers,
   sendEmail,
@@ -395,5 +440,7 @@ module.exports = {
   readEvents,
   readCalendars,
   createEvents,
-  getDummyDoctorsAvailability
+  getDummyDoctorsAvailability,
+  saveReport,
+  getReport
 };
