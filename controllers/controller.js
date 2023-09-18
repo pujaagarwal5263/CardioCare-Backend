@@ -359,9 +359,9 @@ const readCalendars = async (req, res) => {
 };
 
 const createEvents = async (req, res) => {
-  const { email, startTime, endTime, participants } = req.body;
+  const { email, startTime, endTime, description, participants } = req.body;
   const user = await User.findOne({ email });
-  console.log(user);
+ // console.log(user);
 
   if (!user) {
     return res.status(404).json({ message: "User not found" });
@@ -380,8 +380,8 @@ const createEvents = async (req, res) => {
 
   const event = new Event(nylas);
   event.calendarId = calendarID;
-  event.title = "title";
-  event.description = "description";
+  event.title = "Appointment with Nylas";
+  event.description = description;
   event.when.startTime = startTime;
   event.when.endTime = endTime;
 
@@ -390,7 +390,7 @@ const createEvents = async (req, res) => {
       .split(/s*,s*/)
       .map((email) => ({ email }));
   }
-
+  event.notify_participants = true;
   event.save();
 
   return res.json(event);
