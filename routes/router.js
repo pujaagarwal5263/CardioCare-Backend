@@ -16,6 +16,6 @@ router.get("/nylas/read-events",controllers.readEvents);
 router.get("/nylas/read-calendars",controllers.readCalendars);
 router.post("/nylas/create-events",controllers.createEvents);
 router.post("/save_report",controllers.saveReport);
-router.get("/get_report",controllers.getReport);
+router.post("/get_report",controllers.getReport);
 
 module.exports = router;
