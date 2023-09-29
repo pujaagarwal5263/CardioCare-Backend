@@ -6,7 +6,7 @@ router.get('/', controllers.getUsers);
 router.post('/nylas/generate-auth-url',express.json(),controllers.generateAuthURL);
 router.post('/nylas/exchange-mailbox-token',express.json(),controllers.getTokenFromCode)
 router.post('/send_email', controllers.sendEmail);
-router.get("/read_email",controllers.readInbox);
+router.post("/read_email",controllers.readInbox);
 router.post("/star_email",controllers.starEmail);
 router.get("/starred_mails",controllers.getStarredMail);
 router.post("/schedule_email",controllers.scheduleMail);
