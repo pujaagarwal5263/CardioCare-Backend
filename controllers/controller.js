@@ -218,7 +218,7 @@ const starEmail = async (req, res) => {
 const getStarredMail = async (req, res) => {
   const userEmail = req.body.email;
   const currentDateTime = new Date();
-  console.log(currentDateTime);
+ 
   if (!userEmail) {
     return res.status(422).json({ message: "Please send user's email ID" });
   }
@@ -280,7 +280,7 @@ const scheduleMail = async (req, res) => {
           body: scheduledEmail.body,
           to: scheduledEmail.recipient_array,
         });
-        console.log("hii im here");
+    
         await draft.send();
         //once the send is successful try to delete from scheduled array
         console.log("Scheduled email sent:", scheduledEmail);
@@ -321,7 +321,7 @@ const getDummyDoctorsAvailability = async (req, res) => {
   // we'll put desired slot and hit API to see if doctor is available on that slot
   //getting calendar id
   const email = req.query.doctorEmail;
-  console.log(email);
+ 
   if (!email) {
     return res.status(422).json({ message: "Please send sender's email id" });
   }
