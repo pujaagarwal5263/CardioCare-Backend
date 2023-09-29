@@ -80,6 +80,28 @@ const getTokenFromCode = async (req, res) => {
   }
 };
 
+const getUserDetails = async (req, res) => {
+  try {
+    const { emailAddress } = req.params;
+    let user = await User.findOne({ email: emailAddress });
+    if (user) {
+      const userToken = user?.accessToken;
+      const nylas = NylasCongif.with(userToken);
+
+      const account = await nylas.account.get();
+      const name = account.name;
+      const email = account.emailAddress;
+
+      return res.status(200).json({ name: name, email: email });
+    } else {
+      return res.status(404).json({ message: "User not found" });
+    }
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send("Internal Sever Error");
+  }
+};
+
 const sendEmail = async (req, res) => {
   try {
     const { subject, body, recipient_array, sender_email } = req.body;
@@ -101,7 +123,7 @@ const sendEmail = async (req, res) => {
     });
     await draft.send();
 
-    return res.status(200).send("mail sent successfully");
+    return res.status(200).json({message: "mail sent successfully"});
   } catch (err) {
     console.log(err);
     return res.status(500).send("could not send email");
@@ -380,7 +402,7 @@ const createEvents = async (req, res) => {
 
   const event = new Event(nylas);
   event.calendarId = calendarID;
-  event.title = "Appointment with Nylas";
+  event.title = "Appointment with Cardio Care";
   event.description = description;
   event.when.startTime = startTime;
   event.when.endTime = endTime;
@@ -459,4 +481,5 @@ module.exports = {
   getDummyDoctorsAvailability,
   saveReport,
   getReport,
+  getUserDetails
 };
