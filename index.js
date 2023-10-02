@@ -6,10 +6,7 @@ require("./db-connection")
 //require('./modules/migration')
 
 const app=express();
-app.use(cors({
-  origin: 'https://cardio-care-frontend-git-main-pujaagarwal5263.vercel.app/', // Allow requests from this origin
-  credentials: true, // Allow sending cookies or authorization headers
-}));
+app.use(cors());
 app.use(bodyParser.json());
 
 require('./db-connection')
