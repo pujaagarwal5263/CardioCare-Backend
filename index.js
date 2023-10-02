@@ -7,7 +7,7 @@ require("./db-connection")
 
 const app=express();
 app.use(cors({
-  origin: 'https://cardio-care-frontend-git-main-pujaagarwal5263.vercel.app', // Allow requests from this origin
+  origin: 'https://cardiocare.netlify.app/', // Allow requests from this origin
   credentials: true, // Allow sending cookies or authorization headers
 }));
 app.use(bodyParser.json());
