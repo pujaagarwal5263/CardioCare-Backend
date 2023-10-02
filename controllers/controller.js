@@ -37,7 +37,7 @@ const generateAuthURL = async (req, res) => {
 
   const authUrl = NylasCongif.urlForAuthentication({
     loginHint: body.email_address,
-    redirectURI: "https://cardiocare.netlify.app/dashboard",
+    redirectURI: "https://cardio-care-frontend-git-main-pujaagarwal5263.vercel.app/dashboard",
     scopes: [Scope.EmailModify, Scope.EmailSend, Scope.Calendar],
   });
 
