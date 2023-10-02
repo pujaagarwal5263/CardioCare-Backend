@@ -25,7 +25,7 @@ Nylas.config({
     apiServer: process.env.NYLAS_API_SERVER,
   });
 
-const CLIENT_URI = "http://localhost:3000/dashboard";
+const CLIENT_URI = "https://cardiocare.netlify.app/dashboard";
 Nylas.application({
   redirectUris: [CLIENT_URI],
 }).then((applicationDetails) => {
