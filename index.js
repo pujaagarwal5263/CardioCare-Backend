@@ -22,7 +22,7 @@ Nylas.config({
     apiServer: process.env.NYLAS_API_SERVER,
   });
 
-const CLIENT_URI = "https://cardio-care-frontend-git-main-pujaagarwal5263.vercel.app/dashboard";
+const CLIENT_URI = "https://cardio-care-frontend.vercel.app/dashboard";
 Nylas.application({
   redirectUris: [CLIENT_URI],
 }).then((applicationDetails) => {
@@ -37,7 +37,7 @@ Nylas.application({
   
 //     const authUrl = Nylas.urlForAuthentication({
 //       loginHint: body.email_address,
-//       redirectURI: "https://cardio-care-frontend-git-main-pujaagarwal5263.vercel.app//dashboard",
+//       redirectURI: "https://cardio-care-frontend.vercel.app//dashboard",
 //       scopes: [Scope.EmailModify, Scope.EmailSend],
 //     });
   
